@@ -345,9 +345,10 @@ async function guardarCompra(e) {
     archivoTipo = compraExistente.archivoTipo;
   }
 
-  const subtotalTotal = productos.reduce((s,p)=>s+p.subtotal,0);
+  // CORREGIDO: Total = cantidad * precio unitario. Luego se desagrega el IGV
+  const total = productos.reduce((s,p)=>s+p.subtotal,0);
+  const subtotalTotal = total / 1.18;
   const igv = subtotalTotal * 0.18;
-  const total = subtotalTotal + igv;
 
   const maxNum = compras.length? Math.max(...compras.map(c=>c.num)) : 0;
 
@@ -555,9 +556,9 @@ function descargarExcel() {
         'Producto': p.producto,
         'Cantidad': p.cantidad,
         'Precio Unitario (S/.)': p.valor,
-        'Subtotal (S/.)': p.subtotal,
-        'IGV 18% (S/.)': p.subtotal*0.18,
-        'Total (S/.)': p.subtotal*1.18,
+        'Total (S/.)': p.subtotal,
+        'Subtotal (S/.)': p.subtotal/1.18,
+        'IGV 18% (S/.)': (p.subtotal/1.18)*0.18,
         'Método de Pago': c.metodo,
         'Documentos Sustento': c.sustento.join(', '),
         'Sustento Completo': c.sustentoCompleto? 'Sí' : 'No'
@@ -615,9 +616,9 @@ document.getElementById('fileInput').addEventListener('change',e=>{
         archivoNombre:'',
         archivoTipo:'',
         productos:[{producto:get(x,["producto"]),cantidad,valor,subtotal}],
-        subtotal,
-        igv:subtotal*0.18,
-        total:subtotal*1.18
+        total: subtotal,
+        subtotal: subtotal/1.18,
+        igv: (subtotal/1.18)*0.18
       };
     });
     renderTabla();
